@@ -6,7 +6,7 @@ on:
   pull_request:
     branches:
       - release 
-   types:
+    types:
       - closed
 jobs:
   merge:
