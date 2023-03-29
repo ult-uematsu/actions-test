@@ -1,0 +1,8 @@
+検証環境デプロイ(<%= Date.today.strftime('%Y-%m-%d') %>)
+# デプロイ時注意事項
+
+# 変更点
+
+<% pull_requests.each do |pr| -%>
+- #<%=  pr.number %> (<%= pr.assignee ? pr.assignee.login : pr.user ? pr.user.login : "" %>)
+<% end -%>
