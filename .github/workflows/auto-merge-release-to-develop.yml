@@ -1,18 +1,15 @@
 name: "Merge Release Branch to Develop Branch "
 on:
-  # push:
-  #   branches:
-  #     - release
   pull_request:
-    branches:
-      - release 
+    # branches:
+    #   - release 
     types:
       - closed
 jobs:
   merge:
     name: Merge Release to Develop
     runs-on: ubuntu-latest
-    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      if: (github.event.pull_request.base.ref == 'release' && github.event.pull_request.merged == true)
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
