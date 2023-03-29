@@ -4,7 +4,7 @@ on:
     inputs:
       deploy_branch:
         type: choice
-        description: 'デプロイ対象ブランチ'
+        description: 'デプロイ対象ブランチ(ここで選択したブランチがデプロイされます)'
         required: true
         default: develop
         options:
