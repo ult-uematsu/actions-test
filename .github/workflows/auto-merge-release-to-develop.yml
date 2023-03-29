@@ -4,8 +4,8 @@ on:
   #   branches:
   #     - release
   pull_request:
-    branches:
-      - release 
+    # branches:
+    #   - release 
     types:
       - closed
 jobs:
@@ -16,8 +16,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with: 
+          fetch-depth: 0
       - name: Merge Release to Develop
         run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
           git fetch origin develop
           git checkout develop
           git merge origin/release
