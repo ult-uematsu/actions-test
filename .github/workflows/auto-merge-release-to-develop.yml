@@ -4,8 +4,8 @@ on:
   #   branches:
   #     - release
   pull_request:
-    branches:
-      - release 
+    # branches:
+    #   - release 
     types:
       - closed
 jobs:
