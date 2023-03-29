@@ -1,0 +1,21 @@
+name: Merge Release Branch to Develop Branch 
+ on: 
+  push: 
+    branches: 
+      - release 
+  pull_request: 
+    branches: 
+      - release 
+ jobs: 
+  merge: 
+    name: Merge Release to Develop 
+    runs-on: ubuntu-latest 
+    steps: 
+      - name: Checkout code 
+        uses: actions/checkout@v2 
+      - name: Merge Release to Develop 
+        run: | 
+          git fetch origin develop 
+          git checkout develop 
+          git merge origin/release 
+          git push origin develop 
