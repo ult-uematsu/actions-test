@@ -26,3 +26,18 @@ jobs:
           git checkout develop
           git merge origin/release
           git push origin develop
+      - name: Add comment to merged PR
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const repo = context.repo;
+            const prAuthor = context.payload.pull_request.user.login;
+            const commentBody = `@${prAuthor} あなたのPRはdevelopにもマージされました`;
+
+            await github.rest.issues.createComment({
+              ...repo,
+              issue_number: prNumber,
+              body: commentBody,
+            });
+          token: ${{ secrets.GITHUB_TOKEN }}
