@@ -3,11 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       deploy_branch:
+        type: choice
         description: 'デプロイ対象ブランチ'
         required: true
+        default: develop
         options:
-          develop:
-          release:
+          - develop
+          - release
 jobs:
   git-pr-release:
     runs-on: ubuntu-latest
