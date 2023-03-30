@@ -20,8 +20,11 @@ jobs:
           fetch-depth: 0
       - name: Merge Release to Develop
         run: |
+          # ワークフロー内でgit操作するためにuser.name,user.emailの設定が必要。
+          # GitHub Actions用のアイコンになるよう設定する
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
+
           git fetch origin develop
           git checkout develop
           git merge origin/release
@@ -33,7 +36,7 @@ jobs:
             const prNumber = context.issue.number;
             const repo = context.repo;
             const prAuthor = context.payload.pull_request.user.login;
-            const commentBody = `@${prAuthor} あなたのPRはdevelopにもマージされました`;
+            const commentBody = `@${prAuthor}\nこのPRはdevelopにもマージされました。`;
 
             await github.rest.issues.createComment({
               ...repo,
