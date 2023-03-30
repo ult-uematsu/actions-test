@@ -1,11 +1,10 @@
 name: "Merge Release Branch to Develop Branch "
 on:
-  # push:
-  #   branches:
-  #     - release
   pull_request:
+  #   branches:
+  #     - release  # branchesで指定するのはマージ元ブランチ名
     branches-ignore:
-      - "develop"
+      - "develop"  # ドキュメントに記載がないものの、マージ先ブランチ名に効いている?
     types:
       - closed
 jobs:
@@ -50,3 +49,36 @@ jobs:
               body: commentBody,
             });
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Post to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
+          channel-id: 'CHANNEL_ID,ANOTHER_CHANNEL_ID'
+          # For posting a simple plain text message
+          # slack-message: "GitHub actions result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+          payload: |
+            {
+              "text": "GitHub Action result: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "[GitHub Action build result](${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}})"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "test block."
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_CHANNEL: ${{ vars.SLACK_CHANNEL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
