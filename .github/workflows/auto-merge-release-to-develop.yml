@@ -58,6 +58,7 @@ jobs:
           script: |
             const { owner, repo, number: prNumber } = context.issue;
             const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            const prTitle = pr.data.title;
 
             core.setOutput('pr_number', prNumber);
             core.setOutput('pr_title', prTitle);
