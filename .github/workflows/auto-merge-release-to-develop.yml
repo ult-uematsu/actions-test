@@ -3,9 +3,9 @@ on:
   # push:
   #   branches:
   #     - release
-  pull_request:
-    # branches:
-    #   - release 
+  pull_request_target:
+    branches:
+      - release 
     types:
       - closed
 jobs:
@@ -16,7 +16,6 @@ jobs:
       (
         github.event_name == 'pull_request' 
         && github.event.pull_request.merged == true 
-        && github.event.pull_request.base.ref == 'release' 
         && github.event.pull_request.head.ref != 'develop'
       )
     steps:
