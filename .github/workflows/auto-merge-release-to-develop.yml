@@ -74,7 +74,7 @@ jobs:
                 {
                   "type": "section",
                   "text": {
-                    "type": "mrkdwn",
+                    "type": "plain_text",
                     "text": "#${{ steps.get_pr_info.outputs.pr_number }}: ${{ steps.get_pr_info.outputs.pr_title }}"
                   }
                 },
@@ -84,7 +84,7 @@ jobs:
                     "type": "mrkdwn",
                     "text": "[GitHub Action build result](${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}})"
                   }
-                },
+                }
               ]
             }
         env:
