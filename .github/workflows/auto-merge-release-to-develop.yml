@@ -51,9 +51,6 @@ jobs:
               body: commentBody,
             });
 
-            core.setOutput('pr_number', prNumber);
-            core.setOutput('pr_title', prTitle);
-
       - name: Get PR info
         id: get_pr_info
         uses: actions/github-script@v6
