@@ -25,3 +25,5 @@ developでの改修
 
 fix12
 fix13
+
+fix15

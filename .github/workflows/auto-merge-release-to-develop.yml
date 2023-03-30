@@ -34,7 +34,9 @@ jobs:
           git checkout develop
           git merge --no-ff origin/release
           git push origin develop
+
       - name: Add comment to merged PR
+        if: ${{ success() }}
         uses: actions/github-script@v6
         with:
           script: |
@@ -48,21 +50,36 @@ jobs:
               issue_number: prNumber,
               body: commentBody,
             });
-          token: ${{ secrets.GITHUB_TOKEN }}
+
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('pr_title', prTitle);
+
+      - name: Get PR info
+        id: get_pr_info
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo, number: prNumber } = context.issue;
+            const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('pr_title', prTitle);
+
       - name: Post to a Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          # Slack channel id, channel name, or user id to post message.
-          # See also: https://api.slack.com/methods/chat.postMessage#channels
-          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
           channel-id: ${{ vars.SLACK_CHANNEL }}
-          # For posting a simple plain text message
-          # slack-message: "GitHub actions result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
           payload: |
             {
-              "text": "GitHub Action result: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}",
               "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "#${{ steps.get_pr_info.outputs.pr_number }}: ${{ steps.get_pr_info.outputs.pr_title }}"
+                  }
+                },
                 {
                   "type": "section",
                   "text": {
@@ -70,13 +87,6 @@ jobs:
                     "text": "[GitHub Action build result](${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}})"
                   }
                 },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "test block."
-                  }
-                }
               ]
             }
         env:
