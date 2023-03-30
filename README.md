@@ -18,3 +18,5 @@ developでの改修
 fix9
 
 fix10
+
+fix11
