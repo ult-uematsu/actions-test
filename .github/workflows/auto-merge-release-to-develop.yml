@@ -22,6 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with: 
+          # マージ操作のために全ての履歴が必要
           fetch-depth: 0
       - name: Merge Release to Develop
         run: |
