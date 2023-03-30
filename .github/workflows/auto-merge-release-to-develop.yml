@@ -1,10 +1,6 @@
 name: "Merge Release Branch to Develop Branch "
 on:
   pull_request:
-  #   branches:
-  #     - release  # branchesで指定するのはマージ元ブランチ名
-    branches-ignore:
-      - "develop"  # ドキュメントに記載がないものの、マージ先ブランチ名に効いている?
     types:
       - closed
 jobs:
@@ -15,7 +11,8 @@ jobs:
       (
         github.event_name == 'pull_request' 
         && github.event.pull_request.merged == true 
-        && github.event.pull_request.base.ref == 'release' 
+        && github.event.pull_request.base.ref == 'release'
+        && github.event.pull_request.head.ref != 'develop'
       )
     steps:
       - name: Checkout code
@@ -53,6 +50,7 @@ jobs:
 
       - name: Post to a Slack channel
         id: slack
+        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: ${{ vars.SLACK_CHANNEL }}
@@ -63,14 +61,21 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "[#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}](${{ github.event.pull_request.html_url }})"
+                    "text": "以下のPRのdevelopブランチへのマージが失敗しました。\nジョブの結果画面の確認、手動でのマージ作業をお願いします。"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "[GitHub Action build result](${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}})"
+                    "text": "<${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub Actions ジョブ結果>"
                   }
                 }
               ]
