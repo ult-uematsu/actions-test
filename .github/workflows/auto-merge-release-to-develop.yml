@@ -12,10 +12,10 @@ jobs:
   merge:
     name: Merge Release to Develop
     runs-on: ubuntu-latest
-    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'release')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with: 
           fetch-depth: 0
       - name: Merge Release to Develop
@@ -30,7 +30,7 @@ jobs:
           git merge origin/release
           git push origin develop
       - name: Add comment to merged PR
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const prNumber = context.issue.number;
