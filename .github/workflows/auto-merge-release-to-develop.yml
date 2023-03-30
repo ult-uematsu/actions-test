@@ -35,7 +35,7 @@ jobs:
           git merge --no-ff origin/release
           git push origin develop
 
-      - name: Add comment to merged PR
+      - name: Add success comment to merged PR
         if: ${{ success() }}
         uses: actions/github-script@v6
         with:
@@ -51,18 +51,6 @@ jobs:
               body: commentBody,
             });
 
-      - name: Get PR info
-        id: get_pr_info
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { owner, repo, number: prNumber } = context.issue;
-            const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
-            const prTitle = pr.data.title;
-
-            core.setOutput('pr_number', prNumber);
-            core.setOutput('pr_title', prTitle);
-
       - name: Post to a Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
@@ -74,8 +62,8 @@ jobs:
                 {
                   "type": "section",
                   "text": {
-                    "type": "plain_text",
-                    "text": "#${{ steps.get_pr_info.outputs.pr_number }}: ${{ steps.get_pr_info.outputs.pr_title }}"
+                    "type": "mrkdwn",
+                    "text": "[#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}](${{ steps.get_pr_info.outputs.pr_url }})"
                   }
                 },
                 {
