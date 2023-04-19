@@ -61,7 +61,7 @@ jobs:
       - name: "その他の手順の確認"
         if: ${{ contains(github.event.pull_request.labels.*.name, 'need:extra') }}
         run: |
-          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- その他： 要PR本体確認\n" >> $GITHUB_ENV
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- その他： PR本文の「マージ時の注意事項」を参照\n" >> $GITHUB_ENV
 
       # 環境変数MANUAL_STEPSが空でない時のみSlack通知する
       - name: Post to a Slack channel
