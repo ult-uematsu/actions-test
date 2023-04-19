@@ -1,17 +1,19 @@
-name: notify manual actions
+name: Notify manual actions
 on:
   pull_request:
     types:
       - closed
 
 jobs:
+  # ローカル環境で手動実行が必要な手順がある場合にSlack通知します。
   notify-manual-actions:
     name: notify manual actions
     runs-on: ubuntu-latest
     if: |
       (
-        github.event_name == 'pull_request' 
+        github.event_name == 'pull_request'
         && github.event.pull_request.merged == true
+        && github.event.pull_request.base.ref == 'develop'
       )
     steps:
       - name: Checkout code
@@ -35,19 +37,32 @@ jobs:
         if: ${{ contains(github.event.pull_request.labels.*.name, 'need:provision') }}
         run: |
           echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- vagrant provision\n" >> $GITHUB_ENV
+
+      - name: "package.jsonに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'update:yarn') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- yarn install\n" >> $GITHUB_ENV
+
+      - name: "composer.jsonに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'update:composer') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- composer install\n" >> $GITHUB_ENV
+
       - name: "migrationに関する変更確認"
         if: ${{ contains(github.event.pull_request.labels.*.name, 'need:migrate') }}
         run: |
           echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- php artisan migrate\n" >> $GITHUB_ENV
+
       - name: "Seederに関する変更確認"
         if: ${{ contains(github.event.pull_request.labels.*.name, 'need:seed') }}
         run: |
           echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- php artisan db:seed\n" >> $GITHUB_ENV
+
       - name: "その他の手順の確認"
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:misc') }}
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:extra') }}
         run: |
           echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- その他： 要PR本体確認\n" >> $GITHUB_ENV
-      
+
       # 環境変数MANUAL_STEPSが空でない時のみSlack通知する
       - name: Post to a Slack channel
         if: ${{ env.MANUAL_ACTIONS != '' }}
