@@ -1,8 +1,6 @@
 name: Notify Slack on Ansible changes
 on:
   pull_request:
-    branches:
-      - develop
 jobs:
   check-manual-action:
     name: check manual action
