@@ -1,0 +1,65 @@
+name: Notify Slack on Ansible changes
+on:
+  pull_request:
+    branches:
+      - develop
+jobs:
+  check-manual-action:
+    name: check manual action
+    runs-on: ubuntu-latest
+    if: |
+      (
+        github.event_name == 'pull_request' 
+        && github.event.pull_request.merged == true
+      )
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      # - name: Check for Ansible changes
+      #   run: |
+      #     UPDATED_FILES=$(git diff --name-status HEAD^ HEAD)
+      #     STEPS=""
+      #     # ansibleフォルダに追加/更新/削除があった場合
+      #     if echo "${UPDATED_FILES}" | grep -qzE '^[A|M|D]\s+ansible/'; then
+      #       STEPS="- vagrant provision\n${STEPS}"
+      #     # database/migrationsフォルダに追加/更新/削除があった場合
+      #     elif echo "${UPDATED_FILES}" | grep -qzE '^[A|M|D]\s+database/migrations/'; then
+      #       STEPS="- php artisan migrate\n${STEPS}"
+      #     fi
+
+      # need:provisionラベルがついていたらMANUAL_STEPS変数に"- vagrant provision"と追記
+      - name: "Ansibleに関する変更確認"
+        if: ${{ github.event.pull_request.labels.*.name == 'need:provision' }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- vagrant provision\n" >> $GITHUB_ENV
+
+      # 環境変数MANUAL_STEPSが空でない時のみSlack通知する
+      - name: Post to a Slack channel
+        if: ${{ env.MANUAL_ACTIONS != '' }}
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ vars.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "ローカル環境でコマンドの手動実行が必要なPRをマージしました。\nお手数ですが、以下の手順の実施をお願いします。"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_CHANNEL: ${{ vars.SLACK_CHANNEL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
