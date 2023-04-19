@@ -35,7 +35,19 @@ jobs:
         if: ${{ contains(github.event.pull_request.labels.*.name, 'need:provision') }}
         run: |
           echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- vagrant provision\n" >> $GITHUB_ENV
-
+      - name: "migrationに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:migrate') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- php artisan migrate\n" >> $GITHUB_ENV
+      - name: "Seederに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:seed') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- php artisan db:seed\n" >> $GITHUB_ENV
+      - name: "その他の手順の確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:misc') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- その他： 要PR本体確認\n" >> $GITHUB_ENV
+      
       # 環境変数MANUAL_STEPSが空でない時のみSlack通知する
       - name: Post to a Slack channel
         if: ${{ env.MANUAL_ACTIONS != '' }}
