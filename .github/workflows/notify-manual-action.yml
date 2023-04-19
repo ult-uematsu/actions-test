@@ -1,4 +1,4 @@
-name: Notify Slack on Ansible changes
+name: notify manual actions
 on:
   pull_request:
     types:
