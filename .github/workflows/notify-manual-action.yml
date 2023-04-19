@@ -32,7 +32,7 @@ jobs:
 
       # need:provisionラベルがついていたらMANUAL_STEPS変数に"- vagrant provision"と追記
       - name: "Ansibleに関する変更確認"
-        if: ${{ github.event.pull_request.labels.*.name == 'need:provision' }}
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:provision') }}
         run: |
           echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- vagrant provision\n" >> $GITHUB_ENV
 
