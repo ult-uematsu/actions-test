@@ -5,8 +5,8 @@ on:
       - closed
 
 jobs:
-  check-manual-action:
-    name: check manual action
+  notify-manual-actions:
+    name: notify manual actions
     runs-on: ubuntu-latest
     if: |
       (
