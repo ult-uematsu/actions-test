@@ -1,0 +1,100 @@
+name: Notify manual actions
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  # ローカル環境で手動実行が必要な手順がある場合にSlack通知します。
+  notify-manual-actions:
+    name: notify manual actions
+    runs-on: ubuntu-latest
+    if: |
+      (
+        github.event_name == 'pull_request'
+        && github.event.pull_request.merged == true
+        && github.event.pull_request.base.ref == 'develop'
+      )
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      # - name: Check for Ansible changes
+      #   run: |
+      #     UPDATED_FILES=$(git diff --name-status HEAD^ HEAD)
+      #     STEPS=""
+      #     # ansibleフォルダに追加/更新/削除があった場合
+      #     if echo "${UPDATED_FILES}" | grep -qzE '^[A|M|D]\s+ansible/'; then
+      #       STEPS="- vagrant provision\n${STEPS}"
+      #     # database/migrationsフォルダに追加/更新/削除があった場合
+      #     elif echo "${UPDATED_FILES}" | grep -qzE '^[A|M|D]\s+database/migrations/'; then
+      #       STEPS="- php artisan migrate\n${STEPS}"
+      #     fi
+
+      # need:provisionラベルがついていたらMANUAL_STEPS変数に"- vagrant provision"と追記
+      - name: "Ansibleに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:provision') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- vagrant provision\n" >> $GITHUB_ENV
+
+      - name: "package.jsonに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'update:yarn') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- yarn install\n" >> $GITHUB_ENV
+
+      - name: "composer.jsonに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'update:composer') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- composer install\n" >> $GITHUB_ENV
+
+      - name: "migrationに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:migrate') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- php artisan migrate\n" >> $GITHUB_ENV
+
+      - name: "Seederに関する変更確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:seed') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- php artisan db:seed\n" >> $GITHUB_ENV
+
+      - name: "その他の手順の確認"
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'need:extra') }}
+        run: |
+          echo "MANUAL_ACTIONS=${MANUAL_ACTIONS}- その他： PR本文の「マージ時の注意事項」を参照\n" >> $GITHUB_ENV
+
+      # 環境変数MANUAL_STEPSが空でない時のみSlack通知する
+      - name: Post to a Slack channel
+        if: ${{ env.MANUAL_ACTIONS != '' }}
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ vars.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "ローカル環境でコマンドの手動実行が必要なPRをマージしました。\nお手数ですが、以下の手順の実施をお願いします。"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${{ env.MANUAL_ACTIONS }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_CHANNEL: ${{ vars.SLACK_CHANNEL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
