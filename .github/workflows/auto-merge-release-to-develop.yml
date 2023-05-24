@@ -34,7 +34,7 @@ jobs:
           PR_NUMBER=${PR_URL##*/}
 
           # プルリクエストをマージします
-          gh pr merge $PR_NUMBER --merge
+          gh pr merge $PR_NUMBER --merge --admin
 
       - name: Add success comment to merged PR
         if: ${{ success() }}
