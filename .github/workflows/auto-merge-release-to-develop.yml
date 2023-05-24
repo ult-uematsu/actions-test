@@ -30,15 +30,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate.outputs.token }}
         run: |
-          # ワークフロー内でgit操作するためにuser.name,user.emailの設定が必要。
-          # GitHub Actions用のアイコンになるよう設定する
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
+          PR_URL=$(gh pr create --title "release -> developにマージ" --body "" --base develop --head release)
+          PR_NUMBER=${PR_URL##*/}
 
-          git fetch origin develop
-          git checkout develop
-          git merge --no-ff origin/release
-          git push origin develop
+          # プルリクエストをマージします
+          gh pr merge $PR_NUMBER --merge
 
       - name: Add success comment to merged PR
         if: ${{ success() }}
