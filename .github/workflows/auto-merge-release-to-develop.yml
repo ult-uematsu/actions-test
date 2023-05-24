@@ -20,17 +20,21 @@ jobs:
         with: 
           # マージ操作のために全ての履歴が必要
           fetch-depth: 0
+      - name: Generate GitHub Apps token
+        id: generate
+        uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92 #v1.8.0
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Merge Release to Develop
+        env:
+          GITHUB_TOKEN: ${{ steps.generate.outputs.token }}
         run: |
-          # ワークフロー内でgit操作するためにuser.name,user.emailの設定が必要。
-          # GitHub Actions用のアイコンになるよう設定する
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
+          PR_URL=$(gh pr create --title "release -> developにマージ" --body "" --base develop --head release)
+          PR_NUMBER=${PR_URL##*/}
 
-          git fetch origin develop
-          git checkout develop
-          git merge --no-ff origin/release
-          git push origin develop
+          # プルリクエストをマージします
+          gh pr merge $PR_NUMBER --merge --admin
 
       - name: Add success comment to merged PR
         if: ${{ success() }}
