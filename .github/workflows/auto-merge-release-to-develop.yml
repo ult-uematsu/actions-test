@@ -20,7 +20,15 @@ jobs:
         with: 
           # マージ操作のために全ての履歴が必要
           fetch-depth: 0
+      - name: Generate GitHub Apps token
+        id: generate
+        uses: tibdex/github-app-token@b625283 #v1.8.0
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
       - name: Merge Release to Develop
+        env:
+          GITHUB_TOKEN: ${{ steps.generate.outputs.token }}
         run: |
           # ワークフロー内でgit操作するためにuser.name,user.emailの設定が必要。
           # GitHub Actions用のアイコンになるよう設定する
