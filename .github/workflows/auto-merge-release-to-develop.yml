@@ -20,15 +20,13 @@ jobs:
         with: 
           # マージ操作のために全ての履歴が必要
           fetch-depth: 0
-      # - name: Generate GitHub Apps token
-      #   id: generate
-      #   uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92 #v1.8.0
-      #   with:
-      #     app_id: ${{ secrets.APP_ID }}
-      #     private_key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Generate GitHub Apps token
+        id: generate
+        uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92 #v1.8.0
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Merge Release to Develop
-        # env:
-        #   GITHUB_TOKEN: ${{ steps.generate.outputs.token }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
