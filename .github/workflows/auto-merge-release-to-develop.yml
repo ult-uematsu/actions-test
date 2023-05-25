@@ -29,6 +29,8 @@ jobs:
       - name: Merge Release to Develop
         # env:
         #   GITHUB_TOKEN: ${{ steps.generate.outputs.token }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PR_URL=$(gh pr create --title "release -> developにマージ" --body "" --base develop --head release)
           PR_NUMBER=${PR_URL##*/}
