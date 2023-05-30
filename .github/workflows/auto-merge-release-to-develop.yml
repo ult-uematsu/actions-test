@@ -26,15 +26,26 @@ jobs:
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
-      - name: Merge Release to Develop
-        env:
-          GITHUB_TOKEN: ${{ steps.generate.outputs.token }}
-        run: |
-          PR_URL=$(gh pr create --title "release -> developにマージ" --body "" --base develop --head release)
-          PR_NUMBER=${PR_URL##*/}
-
-          # プルリクエストをマージします
-          gh pr merge $PR_NUMBER --merge --admin
+      - name: "release -> developにマージ"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.generate.outputs.token }}
+          script: |
+            const { repo } = context
+            const pr = await github.rest.pulls.create({
+              owner: repo.owner,
+              repo: repo.repo,
+              title: "release -> developにマージ",
+              head: "release",
+              base: "develop"
+            })
+            const prNumber = pr.data.number
+            await github.rest.pulls.merge({
+              owner: repo.owner,
+              repo: repo.repo,
+              pull_number: prNumber,
+              merge_method: "merge"
+            })
 
       - name: Add success comment to merged PR
         if: ${{ success() }}
